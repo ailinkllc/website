@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Link — Your Personal AI Assistant</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,8 +19,17 @@
     .chat-bubble-received { background:#e5e7eb; color:#1f2937; align-self:flex-start; }
     .chat-bubble-sent { background:#3b82f6; color:white; align-self:flex-end; }
     input:disabled, button:disabled { opacity:.5; cursor:not-allowed; }
-    #legal-modal { position:absolute; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50; opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s; }
-    #legal-modal.show { opacity:1; visibility:visible; }
+
+    /* Modal overlay stays empty in HTML; we inject content from modal.html */
+    #legal-modal {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50;
+      opacity: 0; visibility: hidden;
+      transition: opacity .3s ease, visibility .3s ease;
+    }
+    #legal-modal.show { opacity: 1; visibility: visible; }
     .modal-content { background:white; border-radius:20px; width:90%; height:85%; display:flex; flex-direction:column; box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05); }
     .modal-body { overflow-y:auto; padding:20px; }
     .modal-footer { border-top:1px solid #e5e7eb; padding:15px; text-align:center; }
@@ -30,34 +39,13 @@
 <body class="bg-gray-800 text-white min-h-screen flex items-center justify-center p-4">
 
   <div class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-16">
-    <!-- Text Content -->
+    <!-- Left: Logo + Headline -->
     <div class="text-center">
-      <!-- Logo -->
-     <div class="w-40 h-40 mx-auto mb-8 p-4 rounded-full flex items-center justify-center bg-gradient-to-br from-gray-200 via-gray-400 to-gray-500">
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 156.72 156.72" class="w-full h-full">
-                  <defs>
-                    <style>
-                      .cls-1 {
-                        fill: #a19e9e;
-                        font-family: DINAlternate-Bold, 'DIN Alternate';
-                        font-size: 8px;
-                        font-weight: 700;
-                      }
+      <div class="w-40 h-40 mx-auto mb-8 p-4 rounded-full flex items-center justify-center bg-gradient-to-br from-gray-200 via-gray-400 to-gray-500">
+        <!-- Replace this comment with YOUR inline SVG logo -->
+        <!-- <svg>…your logo…</svg> -->
+      </div>
 
-                      .cls-2 {
-                        fill: #0f61b6;
-                        stroke-width: 0px;
-                      }
-                    </style>
-                  </defs>
-                  <g id="Layer_1_Image" data-name="Layer 1 Image">
-                    <path class="cls-2" d="M146.97,90.21c-10.43,26.74-32.82,50.64-62.14,55.06C39.95,152.64,2.5,115.7,10.95,70.8,16.9,22.1,79.24-7.61,118.95,22.84c14.91,10.6,1.88,29.51-4.56,13.27-1.73-7.87-11.05-11.05-17.79-12.95-19.99-5.01-42.68.48-57.11,15.43-22.59,21.55-25.28,66.14,1.08,85.7,22.36,16.77,55.56,12.84,75.87-5.39,3.22-2.95,12.61-11.62,12.15-15.66-7.72,4.93-20.06,7.76-25.03-2.19-.35-1.01-1.8-1.02-2.64.02-6.71,8.52-21.52,8.82-21.85-4.12-8.28,5.04-15.98,13.41-26.95,11.8-9.43-.86-16.34-9.67-16.46-18.89.52-20.14,17.31-43.8,38.94-42.3,4.87.32,9.85,2.62,13.42,6.02.71.47,1.48.49,2.12-.28,3.29-4.01,9.62-.73,9.74,4.05,1.2,6.22-16.99,41.84-4.5,38.94,3.62-1.76,7.26-4.57,8.59-8.5,3.21-5.87,8.05-41.79,16.63-35.28,10.16,6.37-11.98,35.63-4.15,44.48,11.24,5.29,22.41-23.3,30.51-8.48v1.68ZM85.04,66.26c-.23-13.12-17.88-9.6-24.27-2.78-7.49,7.1-13.78,19.43-10.19,30,13.22,16.52,34.52-13.49,34.45-27.22Z"/>
-                  </g>
-                  <g id="TM">
-                    <text class="cls-1" transform="translate(132.71 59.1)"><tspan x="0" y="0">TM</tspan></text>
-                  </g>
-                </svg>
-            </div>
       <h1 class="text-5xl md:text-6xl font-bold">Goodbye, UI.</h1>
       <h2 class="text-3xl md:text-4xl text-blue-400 mt-2">Hello, Assistant.</h2>
       <p class="mt-6 max-w-lg text-lg text-gray-300 mx-auto">
@@ -65,20 +53,20 @@
         Schedule meetings, book travel, and coordinate events through simple conversation.
       </p>
 
-      <!-- Visible Privacy Policy Link (so reviewers can find it instantly) -->
+      <!-- Visible links to standalone policy pages -->
       <p class="mt-4 text-sm text-gray-300">
-        <a href="privacy.html">Privacy Policy</a> • <a href="terms.html">Terms of Service</a>        
+        <a href="privacy.html" class="underline underline-offset-4">Privacy Policy</a> •
+        <a href="terms.html" class="underline underline-offset-4">Terms of Service</a>
       </p>
     </div>
 
-    <!-- Phone Simulator -->
+    <!-- Right: Phone Simulator -->
     <div id="simulator" class="w-full max-w-sm">
       <div class="phone-bezel">
         <div class="phone-screen">
           <div class="notch"></div>
           <div id="screen-content" class="flex-grow flex flex-col justify-between w-full h-full bg-white text-gray-800">
-
-            <!-- Stage 1: Chat Interface -->
+            <!-- Stage 1 -->
             <div id="stage1" class="w-full h-full flex-col">
               <div id="chat-history" class="p-4 pt-20 flex-grow flex flex-col space-y-2">
                 <div class="chat-bubble chat-bubble-received">
@@ -86,140 +74,59 @@
                     Welcome to AI Link! Before we start, please review and consent to our Terms of Service and Privacy Policy.
                   </p>
                   <button id="view-terms-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600">
-                    View TOS & Privacy
+                    View Policies & How It Works
                   </button>
                 </div>
               </div>
 
-              <!-- Opt-in form (visible, compliant) -->
+              <!-- Opt-in (compliant) -->
               <form id="phone-form" class="p-3 border-t border-gray-200 bg-gray-50 text-gray-900">
                 <label for="phone" class="sr-only">Mobile number</label>
                 <div class="flex items-center gap-2">
                   <input type="tel" id="phone" name="phone"
                          class="flex-grow bg-gray-200 border-none rounded-full px-4 py-2 focus:ring-0"
-                         placeholder="Your mobile number" required disabled inputmode="tel" autocomplete="tel" />
+                         placeholder="Your mobile number" required disabled inputmode="tel" autocomplete="tel"/>
                   <button type="submit" id="send-button" class="ml-1 p-2" disabled aria-label="Verify & Opt In">
-                    <svg class="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.789 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                    <svg class="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.789 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
                   </button>
                 </div>
 
-                <!-- Use-case selections (separate consent when needed) -->
+                <!-- Separate consents for declared use cases -->
                 <fieldset class="mt-3 space-y-2 text-sm">
                   <legend class="text-xs uppercase tracking-wider text-gray-500 mb-1">I want to receive:</legend>
                   <label class="flex items-center gap-2">
-                    <input type="checkbox" name="usecase_customer_care" class="accent-blue-600" checked />
+                    <input type="checkbox" name="usecase_customer_care" class="accent-blue-600" checked>
                     Customer support & scheduling confirmations (transactional)
                   </label>
                   <label class="flex items-center gap-2">
-                    <input type="checkbox" name="usecase_2fa" class="accent-blue-600" checked />
+                    <input type="checkbox" name="usecase_2fa" class="accent-blue-600" checked>
                     Authentication codes (OTP/2FA)
                   </label>
-                  <!-- If you really need Events, enable this and keep it UNCHECKED by default -->
+                  <!-- Optional: enable if you file a separate “Events” campaign -->
                   <!--
                   <label class="flex items-center gap-2">
-                    <input type="checkbox" name="usecase_events" class="accent-blue-600" />
+                    <input type="checkbox" name="usecase_events" class="accent-blue-600">
                     Event reminders & updates
                   </label>
                   -->
                 </fieldset>
 
-                <!-- Required disclosures & consent text -->
+                <!-- Required disclosures -->
                 <p class="mt-3 text-xs text-gray-700 leading-relaxed">
-                  By providing your phone number, you agree to receive SMS messages from
-                  <strong>AI Link LLC</strong> for the selected purposes above.
+                  By providing your phone number, you agree to receive SMS from <strong>AI Link LLC</strong> for the selected purposes above.
                   <em>Message frequency may vary.</em> Message &amp; data rates may apply.
                   Reply <strong>STOP</strong> to unsubscribe, <strong>HELP</strong> for help.
-                  See our <a href="#privacy-policy" class="underline">Privacy Policy</a>.
+                  See our <a href="privacy.html" class="underline">Privacy Policy</a>.
                 </p>
               </form>
             </div>
-            <!-- (Stages 2/3 can be added here) -->
-
+            <!-- (Future: add stages for OTP, etc.) -->
           </div>
 
-          <!-- Legal Modal -->
-          <div id="legal-modal">
-            <div class="modal-content">
-              <div id="modal-body" class="modal-body">
-                <p class="text-center text-red-600 font-semibold mb-6">
-                  ***DRAFT DOCUMENT: THIS IS A DRAFT AND IS UNDERGOING FORMAL LEGAL REVIEW.***
-                </p>
-
-                <section id="terms-of-service">
-                  <h2 class="text-2xl font-bold text-center mb-6">TERMS OF SERVICE</h2>
-                  <div class="space-y-4 text-sm text-gray-700">
-                    <p><strong>Last Updated:</strong> September 3, 2025</p>
-                    <p>Welcome to AI Link! These Terms of Service (“Terms”) govern your use of the AI Link, LLC (“AI Link”, “we”, “us”, “our”) AI-powered personal assistant service provided via SMS (the “Service”). By using our Service, you agree to these Terms.</p>
-                    <h3 class="text-lg font-semibold mt-4">1. Description of Service</h3>
-                    <p>AI Link is a conversational AI assistant that allows users to perform tasks such as scheduling, travel booking, and information retrieval through SMS messages. The Service acts on your behalf to interact with third-party services.</p>
-                    <h3 class="text-lg font-semibold mt-4">2. Eligibility and Account Registration</h3>
-                    <p>You must be at least 13 years of age to use the Service. By agreeing to these Terms, you represent that you are at least 13 years old. You agree to provide a valid mobile phone number for registration and consent to receive SMS messages from us.</p>
-                    <h3 class="text-lg font-semibold mt-4">3. User Conduct</h3>
-                    <p>You agree not to use the Service for any unlawful purpose or in any way that interrupts, damages, or impairs the Service. You are responsible for all activity that occurs through your registered phone number.</p>
-                    <h3 class="text-lg font-semibold mt-4">4. Third-Party Services</h3>
-                    <p>The Service may interact with third-party platforms (e.g., calendar and travel services) to fulfill your requests. Your use of those services is subject to their terms and privacy policies.</p>
-                    <h3 class="text-lg font-semibold mt-4">5. Fees and Payment</h3>
-                    <p>Some transactions (e.g., bookings) may incur fees. You will be notified of any fees and asked to confirm payment via a secure processor. All charges are final and non-refundable.</p>
-                    <h3 class="text-lg font-semibold mt-4">6. Termination</h3>
-                    <p>We may suspend or terminate your access to the Service at any time if we believe your use violates these Terms or is harmful.</p>
-                    <h3 class="text-lg font-semibold mt-4">7. Disclaimers & Limitation of Liability</h3>
-                    <p>THE SERVICE IS PROVIDED “AS IS” AND “AS AVAILABLE” WITHOUT WARRANTIES OF ANY KIND. IN NO EVENT WILL AI LINK LLC BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</p>
-                    <h3 class="text-lg font-semibold mt-4">8. Governing Law</h3>
-                    <p>These Terms are governed by the laws of the State of Missouri.</p>
-                    <h3 class="text-lg font-semibold mt-4">9. Changes to Terms</h3>
-                    <p>We may modify these Terms at any time and will provide notice of significant changes. Continued use after changes indicates acceptance.</p>
-                    <h3 class="text-lg font-semibold mt-4">10. Contact</h3>
-                    <p>support@ailink.at</p>
-                  </div>
-                </section>
-
-                <hr class="dashed-line"/>
-
-                <section id="privacy-policy">
-                  <h2 class="text-2xl font-bold text-center mb-6">PRIVACY POLICY</h2>
-                  <div class="space-y-4 text-sm text-gray-700">
-                    <p><strong>Last Updated:</strong> September 3, 2025</p>
-                    <p>AI Link LLC (“we,” “us,” or “our”) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our SMS-based AI assistant (the “Service”).</p>
-                    <h3 class="text-lg font-semibold mt-4">1. Information We Collect</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-2">
-                      <li><strong>Personal Data:</strong> Your mobile number to create/manage your account.</li>
-                      <li><strong>Conversation Data:</strong> Content of your SMS conversations for context and service quality.</li>
-                      <li><strong>Third-Party Data:</strong> Only as needed to fulfill your requests (e.g., calendar invitees, travel details).</li>
-                      <li><strong>Usage Data:</strong> Basic interaction metadata to maintain and improve the Service.</li>
-                    </ul>
-                    <h3 class="text-lg font-semibold mt-4">2. How We Use Information</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-2">
-                      <li>Provide, maintain, and improve the Service.</li>
-                      <li>Process requests and transactions.</li>
-                      <li>Send transactional SMS (including OTP codes).</li>
-                      <li>Enhance security and prevent abuse.</li>
-                    </ul>
-                    <h3 class="text-lg font-semibold mt-4">3. Sharing</h3>
-                    <ul class="list-disc list-inside ml-4 space-y-2">
-                      <li>With service providers solely to fulfill your requests.</li>
-                      <li>With your consent.</li>
-                      <li>For legal reasons if required.</li>
-                    </ul>
-                    <h3 class="text-lg font-semibold mt-4">4. Data Security & Retention</h3>
-                    <p>We use administrative, technical, and physical safeguards. We retain data as long as needed to provide the Service and meet legal obligations.</p>
-                    <h3 class="text-lg font-semibold mt-4">5. Your Choices</h3>
-                    <p>You may opt out at any time by texting “STOP” to the service number. Text “HELP” for help. You may request deletion of conversation history by contacting us.</p>
-                    <h3 class="text-lg font-semibold mt-4">6. No Selling/Sharing for Marketing</h3>
-                    <p><strong>AI Link LLC does not share, sell, or rent your mobile information with third parties or affiliates for marketing or promotional purposes.</strong> Mobile information is used only to deliver the SMS services you have opted into.</p>
-                    <h3 class="text-lg font-semibold mt-4">7. Changes</h3>
-                    <p>We may update this policy and will notify you via SMS of material changes.</p>
-                    <h3 class="text-lg font-semibold mt-4">8. Contact</h3>
-                    <p>support@ailink.at</p>
-                  </div>
-                </section>
-              </div>
-              <div class="modal-footer">
-                <button id="agree-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg" disabled>Agree & Continue</button>
-              </div>
-            </div>
-          </div>
+          <!-- Empty overlay container; content injected from modal.html -->
+          <div id="legal-modal"></div>
         </div>
-      </div> <!-- bezel -->
+      </div>
     </div>
   </div>
 
@@ -229,11 +136,9 @@
   <script>
     const BACKEND_URL = 'https://48dc7f24fde8.ngrok-free.app';
 
-    // DOM refs
+    // Refs
     const viewTermsButton = document.getElementById('view-terms-button');
     const legalModal = document.getElementById('legal-modal');
-    const modalBody = document.getElementById('modal-body');
-    const agreeButton = document.getElementById('agree-button');
     const phoneInput = document.getElementById('phone');
     const sendButton = document.getElementById('send-button');
     const phoneForm = document.getElementById('phone-form');
@@ -246,39 +151,70 @@
       setTimeout(() => notificationMessage.classList.remove('show'), 5000);
     }
 
-    // Modal flow
-    viewTermsButton.addEventListener('click', () => legalModal.classList.add('show'));
-    modalBody.addEventListener('scroll', () => {
-      if (modalBody.scrollTop + modalBody.clientHeight >= modalBody.scrollHeight - 10) {
-        agreeButton.disabled = false;
+    // Load and inject modal.html only when needed
+    async function loadModal() {
+      try {
+        const res = await fetch('modal.html?ts=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load modal.html');
+        const html = await res.text();
+        legalModal.innerHTML = html;
+
+        // Wire up injected elements
+        const modalBody = legalModal.querySelector('#modal-body');
+        const agreeButton = legalModal.querySelector('#agree-button');
+
+        // Enable Agree after a brief scroll (or immediately if you prefer)
+        modalBody.addEventListener('scroll', () => {
+          const nearBottom = modalBody.scrollTop + modalBody.clientHeight >= modalBody.scrollHeight - 10;
+          if (nearBottom) agreeButton.disabled = false;
+        });
+
+        agreeButton.addEventListener('click', () => {
+          legalModal.classList.remove('show');
+          phoneInput.disabled = false;
+          sendButton.disabled = false;
+
+          const agreedBubble = document.createElement('div');
+          agreedBubble.className = 'chat-bubble chat-bubble-sent';
+          agreedBubble.textContent = 'I agree to the terms and privacy.';
+          chatHistory.appendChild(agreedBubble);
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+        });
+
+        // Close when clicking outside modal content
+        legalModal.addEventListener('mousedown', (e) => {
+          const content = legalModal.querySelector('.modal-content');
+          if (content && !content.contains(e.target)) {
+            legalModal.classList.remove('show');
+          }
+        });
+
+      } catch (err) {
+        console.error(err);
+        showNotification('Could not load policies modal.', 'error');
       }
-    });
-    agreeButton.addEventListener('click', () => {
-      legalModal.classList.remove('show');
-      phoneInput.disabled = false;
-      sendButton.disabled = false;
-      const agreedBubble = document.createElement('div');
-      agreedBubble.className = 'chat-bubble chat-bubble-sent';
-      agreedBubble.textContent = 'I agree to the terms and privacy.';
-      chatHistory.appendChild(agreedBubble);
-      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    // Open modal on button click
+    viewTermsButton.addEventListener('click', async () => {
+      if (!legalModal.innerHTML.trim()) {
+        await loadModal();
+      }
+      legalModal.classList.add('show');
     });
 
-    // Opt-in submit (stub; connect to your backend)
+    // Submit opt-in (stub to your backend)
     phoneForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const phone = phoneInput.value.trim();
       const usecases = {
-        customer_care: phoneForm.querySelector('[name="usecase_customer_care"]').checked,
-        two_fa: phoneForm.querySelector('[name="usecase_2fa"]').checked,
+        customer_care: phoneForm.querySelector('[name="usecase_customer_care"]')?.checked || false,
+        two_fa: phoneForm.querySelector('[name="usecase_2fa"]')?.checked || false,
         // events: phoneForm.querySelector('[name="usecase_events"]')?.checked || false,
       };
-      if (!phone) {
-        showNotification('Please enter your mobile number.', 'error');
-        return;
-      }
+      if (!phone) return showNotification('Please enter your mobile number.', 'error');
+
       try {
-        // Example POST to record consent
         await fetch(`${BACKEND_URL}/api/opt-in`, {
           method: 'POST',
           headers: { 'Content-Type':'application/json' },
@@ -290,8 +226,7 @@
           })
         });
         showNotification('Thanks! We’ve sent a verification code (if required).');
-        // Next stage could show OTP entry…
-      } catch (err) {
+      } catch (_) {
         showNotification('Could not submit. Please try again.', 'error');
       }
     });
