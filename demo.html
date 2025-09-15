@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Link — Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif
+        }
+
+        :root {
+            --hd-bg: #0f1e2b;
+            --hd-text: #e8eef6;
+            --hd-blue: #3b82f6;
+            --hd-blue-dark: #1e60d1;
+            --hd-border: rgba(255, 255, 255, .08)
+        }
+
+        body {
+            background: var(--hd-bg);
+            color: var(--hd-text)
+        }
+
+        .phone-bezel {
+            background: linear-gradient(180deg, #0c0f14, #151a22);
+            padding: 10px;
+            border-radius: 40px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .55), 0 6px 16px rgba(0, 0, 0, .35), inset 0 0 0 2px #2d3748
+        }
+
+        .phone-screen {
+            background: #fff;
+            border-radius: 30px;
+            overflow: hidden;
+            aspect-ratio: 9/19.5;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid #121826
+        }
+
+        .notch {
+            background: linear-gradient(180deg, #0f131a, #0a0d11);
+            width: 150px;
+            height: 25px;
+            border-radius: 0 0 15px 15px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            border: 1px solid var(--hd-border);
+            box-shadow: 0 2px 6px rgba(2, 10, 23, .15)
+        }
+
+        .chat-bubble-received {
+            background: linear-gradient(180deg, #f5f7fa, #e9edf3);
+            color: #111827;
+            border-color: rgba(17, 24, 39, .08)
+        }
+
+        .chat-bubble-sent {
+            background: linear-gradient(180deg, var(--hd-blue), #2e6fe0);
+            color: #fff;
+            border-color: rgba(255, 255, 255, .2);
+            box-shadow: 0 6px 14px rgba(59, 130, 246, .35), 0 2px 6px rgba(0, 0, 0, .2)
+        }
+
+        .hd-button-primary {
+            background: linear-gradient(180deg, var(--hd-blue), var(--hd-blue-dark));
+            color: #fff;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 10px 22px rgba(59, 130, 246, .35), 0 2px 6px rgba(0, 0, 0, .25)
+        }
+
+        .hd-button-secondary {
+            background: linear-gradient(180deg, #f3f6fb, #e9eef6);
+            color: #0f172a;
+            border: 1px solid rgba(2, 8, 23, .08);
+            border-radius: 12px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 10px rgba(2, 8, 23, .08)
+        }
+
+        .hd-input {
+            background: #eef3fb;
+            border: 1px solid rgba(2, 8, 23, .12);
+            border-radius: 9999px;
+            padding: 10px 14px;
+            outline: none
+        }
+
+        .hd-input:focus {
+            border-color: rgba(59, 130, 246, .8);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, .15)
+        }
+
+        .hd-button-icon {
+            background: linear-gradient(180deg, #f3f6fb, #e9eef6);
+            border: 1px solid rgba(2, 8, 23, .08);
+            border-radius: 9999px;
+            padding: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(2, 8, 23, .12)
+        }
+
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity .3s, transform .3s
+        }
+
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0)
+        }
+
+        .message-box.success {
+            background: #28a745
+        }
+
+        .message-box.error {
+            background: #dc3545
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6">
+    <!-- Icons sprite (keep minimal set used below) -->
+    <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+        <defs>
+            <style>
+                .ico-outline {
+                    fill: none;
+                    stroke: #111827;
+                    stroke-width: 1.75;
+                    stroke-linecap: round;
+                    stroke-linejoin: round
+                }
+
+                .ico-accent {
+                    fill: none;
+                    stroke: #3b82f6;
+                    stroke-width: 1.75;
+                    stroke-linecap: round;
+                    stroke-linejoin: round
+                }
+            </style>
+            <symbol id="ico-calendar" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" class="ico-outline" />
+                <line x1="3" y1="10" x2="21" y2="10" class="ico-outline" />
+                <line x1="8" y1="2.5" x2="8" y2="6" class="ico-outline" />
+                <line x1="16" y1="2.5" x2="16" y2="6" class="ico-outline" />
+                <circle cx="8" cy="14" r="1.4" class="ico-accent" />
+                <circle cx="12" cy="14" r="1.4" class="ico-accent" />
+                <circle cx="16" cy="14" r="1.4" class="ico-accent" />
+            </symbol>
+            <symbol id="ico-plane" viewBox="0 0 24 24">
+                <path d="M22 13H12L3 20l2.5-7H2l-1-2 1-2h3.5L3 2l9 7h10l-2 4z" class="ico-outline" />
+                <path d="M22 13l-2 4" class="ico-accent" />
+            </symbol>
+            <symbol id="ico-send" viewBox="0 0 24 24">
+                <path d="M22 2L11 13" class="ico-outline" />
+                <path d="M22 2l-7 20-4-9-9-4 20-7z" class="ico-outline" />
+                <path d="M11 13l4 4" class="ico-accent" />
+            </symbol>
+        </defs>
+    </svg>
+
+    <div class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-16">
+        <!-- Left copy -->
+    <div class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-16 min-h-screen">
+        <!-- Left: Logo + Headline + Content (all vertically) -->
+        <div class="flex flex-col items-center text-center flex-1">
+            <!-- Logo circle -->
+            <div class="w-40 h-40 mb-8 p-4 rounded-full flex items-center justify-center
+                      bg-gradient-to-br from-gray-200 via-gray-400 to-gray-500">
+                <!-- Your SVG logo -->
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 156.72 156.72" class="w-full h-full">
+                    <defs>
+                        <style>
+                            .cls-1 {
+                                fill: #a19e9e;
+                                font-family: DINAlternate-Bold, 'DIN Alternate';
+                                font-size: 8px;
+                                font-weight: 700;
+                            }
+    
+                            .cls-2 {
+                                fill: #0f61b6;
+                                stroke-width: 0px;
+                            }
+                        </style>
+                    </defs>
+                    <g id="Layer_1_Image" data-name="Layer 1 Image">
+                        <path class="cls-2"
+                            d="M146.97,90.21c-10.43,26.74-32.82,50.64-62.14,55.06C39.95,152.64,2.5,115.7,10.95,70.8,16.9,22.1,79.24-7.61,118.95,22.84c14.91,10.6,1.88,29.51-4.56,13.27-1.73-7.87-11.05-11.05-17.79-12.95-19.99-5.01-42.68.48-57.11,15.43-22.59,21.55-25.28,66.14,1.08,85.7,22.36,16.77,55.56,12.84,75.87-5.39,3.22-2.95,12.61-11.62,12.15-15.66-7.72,4.93-20.06,7.76-25.03-2.19-.35-1.01-1.8-1.02-2.64.02-6.71,8.52-21.52,8.82-21.85-4.12-8.28,5.04-15.98,13.41-26.95,11.8-9.43-.86-16.34-9.67-16.46-18.89.52-20.14,17.31-43.8,38.94-42.3,4.87.32,9.85,2.62,13.42,6.02.71.47,1.48.49,2.12-.28,3.29-4.01,9.62-.73,9.74,4.05,1.2,6.22-16.99,41.84-4.5,38.94,3.62-1.76,7.26-4.57,8.59-8.5,3.21-5.87,8.05-41.79,16.63-35.28,10.16,6.37-11.98,35.63-4.15,44.48,11.24,5.29,22.41-23.3,30.51-8.48v1.68ZM85.04,66.26c-.23-13.12-17.88-9.6-24.27-2.78-7.49,7.1-13.78,19.43-10.19,30,13.22,16.52,34.52-13.49,34.45-27.22Z" />
+                        <g id="TM">
+                            <text class="cls-1" transform="translate(132.71 59.1)">
+                                <tspan x="0" y="0">TM</tspan>
+                            </text>
+                        </g>
+                </svg>
+            </div>
+    
+            <h1 class="text-5xl md:text-6xl font-bold">Goodbye, UI.</h1>
+            <h2 class="text-3xl md:text-4xl text-blue-400 mt-2">Hello, Assistant.</h2>
+            <p class="mt-6 max-w-lg text-lg text-gray-300">
+                AI Link transforms your native messaging app into a powerful personal assistant.
+                Schedule meetings, book travel, and coordinate events through simple conversation.
+            </p>
+            
+        </div>
+
+
+        <!-- Right: Phone emulator -->
+        <div class="flex-1 w-full max-w-sm">
+            <div class="phone-bezel">
+                <div class="phone-screen">
+                    <div class="notch"></div>
+                    <div id="screen-content"
+                        class="flex-grow flex flex-col justify-between w-full h-full bg-white text-gray-800">
+                        <div id="stage1" class="w-full h-full flex flex-col">
+                            <div id="chat-history" class="p-4 pt-20 flex-1 overflow-y-auto flex flex-col space-y-2">
+                                <!-- Welcome bubble with example toggles -->
+                                <div class="chat-bubble chat-bubble-received" style="max-width:92%;">
+                                    <p class="mb-2"><strong>Welcome to AI Link!</strong> Choose a demo to see how the
+                                        assistant works.</p>
+                                    <div class="grid grid-cols-1 gap-2 mt-2">
+                                        <button id="demo-scheduling" class="hd-button-secondary">See Scheduling
+                                            Example</button>
+                                        <button id="demo-travel" class="hd-button-secondary">See Travel Booking
+                                            Example</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="stage2" class="hidden flex flex-col"></div>
+                        </div>
+
+                        <!-- Footer input (enabled for demo) -->
+                        <form id="phone-form" class="p-3 border-t border-gray-200 bg-gray-50 text-gray-900">
+                            <label for="phone" class="sr-only">Mobile number</label>
+                            <div class="flex items-center gap-2">
+                                <input type="tel" id="phone" name="phone" class="hd-input flex-grow"
+                                    placeholder="Your mobile number" required autocomplete="tel" />
+                                <button type="submit" id="send-button" class="hd-button-icon"
+                                    aria-label="Verify & Opt In">
+                                    <svg class="w-7 h-7" aria-hidden="true">
+                                        <use href="#ico-send" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-message" class="message-box"></div>
+
+    <script>
+        // simple sched & travel demo output (same content you liked earlier)
+        const history = document.getElementById('chat-history');
+        function bubble(text, sent = false) {
+            const d = document.createElement('div');
+            d.className = 'chat-bubble ' + (sent ? 'chat-bubble-sent' : 'chat-bubble-received');
+            d.innerHTML = text; history.appendChild(d); history.scrollTop = history.scrollHeight;
+        }
+        document.getElementById('demo-scheduling').onclick = () => {
+            bubble('<strong>You:</strong> Set up a 30-min Zoom with Sam Carter, Priya Desai, and Miguel Alvarez next Tue at 2pm CT.', true);
+            bubble('Assistant: I found matches—<br>• Sam Carter · sam.carter@acme.com · (415) 555-0142<br>• Priya Desai · priya.desai@contoso.com · (312) 555-0199<br>• Miguel Alvarez · malvarez@fabrikam.com · (646) 555-0118<br>Shall I send invites for Tue 2:00–2:30 PM CT?');
+            bubble('You: Yes, confirm.', true);
+            bubble('Assistant: ✅ Invites sent, Zoom link created, calendar holds placed. I’ll remind everyone 10 minutes before.');
+        };
+        document.getElementById('demo-travel').onclick = () => {
+            bubble('You: Book STL→SFO next Thu, return Sun evening. Window seat, carry-on only.', true);
+            bubble('Assistant: Found three options on United/Delta/Alaska. Best value: United 2216 Thu 8:35 AM (3h56m), return United 1939 Sun 7:20 PM. Total $486. Use card on file?', false);
+            bubble('You: Confirm with United.', true);
+            bubble('Assistant: ✅ Ticketed. United 2216 / 1939, TSA Pre✓ added, receipt sent to admin@ailink.at.');
+        };
+    </script>
+</body>
+
+</html>

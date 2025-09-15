@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Link — Log in / Sign up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .phone-bezel {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04), inset 0 0 0 2px #333;
+        }
+
+        .phone-screen {
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            aspect-ratio: 9/19.5;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .notch {
+            background: #1a1a1a;
+            width: 150px;
+            height: 25px;
+            border-radius: 0 0 15px 15px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity .3s, transform .3s;
+            pointer-events: none;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .message-box.success {
+            background: #28a745;
+        }
+
+        .message-box.error {
+            background: #dc3545;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble-received {
+            background: #e5e7eb;
+            color: #1f2937;
+            align-self: flex-start;
+        }
+
+        .chat-bubble-sent {
+            background: #3b82f6;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .chat-bubble {
+            line-height: 1.4;
+        }
+
+        .chat-bubble p {
+            margin: 0;
+        }
+
+        .chat-bubble ul {
+            margin: 0;
+            padding: 0;
+            list-style-position: inside;
+        }
+
+        .chat-bubble li {
+            margin: 0.25rem 0 0 0;
+        }
+
+        input:disabled,
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        #legal-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .3s ease, visibility .3s ease;
+        }
+
+        #legal-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            height: 85%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1), 0 4px 6px -2px rgba(0, 0, 0, .05);
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .dashed-line {
+            border-top: 2px dashed #d1d5db;
+            margin: 2.5rem 0;
+        }
+
+        /* New: inactive simulator state (desaturated, non-interactive) */
+        .simulator-inactive {
+            filter: grayscale(100%) contrast(.95) opacity(.65);
+            pointer-events: none;
+            user-select: none;
+            transition: filter .2s ease, opacity .2s ease;
+        }
+        /* === HD look & feel (ChatGPT-like, blue-accent) === */
+        :root {
+          --hd-bg: #0f1e2b;
+          --hd-panel: #0d2235;
+          --hd-card: #0e2a44;
+          --hd-border: rgba(255,255,255,0.08);
+          --hd-border-strong: rgba(255,255,255,0.14);
+          --hd-text: #e8eef6;
+          --hd-subtle: #c6d4e3;
+          --hd-blue: #3b82f6;
+          --hd-blue-dark: #1e60d1;
+          --hd-blue-ink: #0b4fb3;
+          --hd-shadow: 0 10px 30px rgba(3,12,27,0.45), 0 2px 10px rgba(3,12,27,0.35);
+          --hd-inset: inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.35);
+        }
+
+        /* Canvas */
+        body.bg-gray-800 { background: var(--hd-bg) !important; color: var(--hd-text); }
+
+        /* Phone shell */
+        .phone-bezel {
+          background: linear-gradient(180deg, #0c0f14, #151a22);
+          box-shadow: 0 18px 40px rgba(0,0,0,.55), 0 6px 16px rgba(0,0,0,.35), inset 0 0 0 2px #2d3748;
+        }
+        .phone-screen {
+          border: 1px solid #121826;
+          box-shadow: var(--hd-inset), 0 12px 26px rgba(2,10,23,0.45);
+        }
+
+        /* Notch gloss */
+        .notch {
+          background: linear-gradient(180deg, #0f131a, #0a0d11);
+          box-shadow: inset 0 -2px 6px rgba(255,255,255,0.05), inset 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        /* Bubbles */
+        .chat-bubble {
+          border: 1px solid var(--hd-border);
+          box-shadow: 0 2px 6px rgba(2,10,23,0.15);
+        }
+        .chat-bubble-received {
+          background: linear-gradient(180deg, #f5f7fa, #e9edf3);
+          color: #111827;
+          border-color: rgba(17,24,39,0.08);
+        }
+        .chat-bubble-sent {
+          background: linear-gradient(180deg, var(--hd-blue), #2e6fe0);
+          border-color: rgba(255,255,255,0.2);
+          box-shadow: 0 6px 14px rgba(59,130,246,0.35), 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Buttons */
+        .hd-button-primary {
+          background: linear-gradient(180deg, var(--hd-blue), var(--hd-blue-dark));
+          color: white; font-weight: 600;
+          border: 1px solid rgba(255,255,255,0.18);
+          border-radius: 12px; padding: 10px 14px;
+          box-shadow: 0 10px 22px rgba(59,130,246,.35), 0 2px 6px rgba(0,0,0,.25);
+          transition: transform .06s ease, box-shadow .2s ease, filter .15s ease;
+        }
+        .hd-button-primary:hover { filter: brightness(1.05); }
+        .hd-button-primary:active { transform: translateY(1px); box-shadow: 0 6px 16px rgba(59,130,246,.30); }
+
+        .hd-button-secondary {
+          background: linear-gradient(180deg, #f3f6fb, #e9eef6);
+          color: #0f172a; font-weight: 500;
+          border: 1px solid rgba(2,8,23,0.08);
+          border-radius: 12px; padding: 10px 12px;
+          box-shadow: 0 4px 10px rgba(2,8,23,.08);
+          transition: transform .06s ease, box-shadow .2s ease, filter .15s ease;
+        }
+        .hd-button-secondary:hover { filter: brightness(1.02); }
+        .hd-button-secondary:active { transform: translateY(1px); }
+
+        .hd-button-icon {
+          background: linear-gradient(180deg, #f3f6fb, #e9eef6);
+          border: 1px solid rgba(2,8,23,0.08);
+          border-radius: 9999px; padding: 8px; display: inline-flex; align-items: center; justify-content: center;
+          box-shadow: 0 3px 8px rgba(2,8,23,.12);
+        }
+        .hd-button-icon svg { width: 22px; height: 22px; }
+
+        /* Inputs */
+        .hd-input {
+          background: #eef3fb;
+          border: 1px solid rgba(2,8,23,0.12);
+          border-radius: 9999px; padding: 10px 14px;
+          outline: none;
+          box-shadow: inset 0 1px 2px rgba(2,8,23,0.06);
+          transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+        }
+        .hd-input:focus {
+          border-color: rgba(59,130,246,0.8);
+          box-shadow: 0 0 0 4px rgba(59,130,246,0.15), inset 0 1px 2px rgba(2,8,23,0.06);
+          background: #f8fbff;
+        }
+
+        /* Panels / modals */
+        .modal-content {
+          border: 1px solid var(--hd-border-strong);
+          box-shadow: var(--hd-shadow);
+        }
+
+        /* Cards inside emulator (like the gray panels) */
+        .bg-gray-50 { background: linear-gradient(180deg, #f7f9fc, #f1f4f9) !important; }
+
+        /* Links theme */
+        a.ink-link { color:#9ec3ff; text-decoration: underline; text-underline-offset: 3px; }
+        a.ink-link:hover { color:#c9dfff; }
+
+        /* Auth card tweaks (Twilio-like) */
+        .auth-card{background:#fff;color:#0b1220;border-radius:24px;box-shadow:0 18px 42px rgba(2,8,23,.30),0 6px 16px rgba(2,8,23,.18)}
+        .auth-title{font-weight:800;letter-spacing:.2px;color:var(--hd-blue)}
+        .auth-subtle{color:#6b7280}
+        .auth-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #b8b8b9, #dbe6ff);
+            box-shadow: inset 0 3px 0 rgba(255,255,255,.8),
+                        0 4px 12px rgba(2,8,23,.15);
+        }
+        
+        .form-tile{display:flex;align-items:center;gap:12px;background:#f3f6fb;border:1px solid rgba(2,8,23,.08);border-radius:14px;padding:18px}
+        .form-tile svg{width:36px;height:36px;color:#0f172a}
+        .auth-button{background:linear-gradient(180deg,var(--hd-blue),var(--hd-blue-dark));color:#fff;font-weight:800;border-radius:12px;padding:12px 16px;box-shadow:0 10px 22px rgba(59,130,246,.35),0 2px 6px rgba(0,0,0,.25)}
+        .auth-button:hover{filter:brightness(1.05)}
+        .auth-footer a{color:var(--hd-blue)}
+
+        /* Inactive simulator look */
+        .simulator-inactive { filter: grayscale(80%) saturate(80%) brightness(.9) opacity(.75); }
+    </style>
+</head>
+
+<body class="bg-gray-800 text-white min-h-screen flex items-center justify-center p-4">
+    <!-- Inline SVG sprite (outline + blue accent) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"
+        focusable="false">
+        <defs>
+            <style>
+                .ico-outline {
+                    fill: none;
+                    stroke: #111827;
+                    stroke-width: 1.75;
+                    stroke-linecap: round;
+                    stroke-linejoin: round
+                }
+    
+                .ico-accent {
+                    fill: none;
+                    stroke: var(--hd-blue);
+                    stroke-width: 1.75;
+                    stroke-linecap: round;
+                    stroke-linejoin: round
+                }
+            
+                .btn-icon{
+                    display:inline-flex;
+                    align-items:center;
+                    gap:.5rem
+                }
+                
+                .btn-icon svg{
+                    width:20px;
+                    height:20px}
+            
+            
+            </style>
+    
+            <!-- calendar -->
+            <symbol id="ico-calendar" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" class="ico-outline" />
+                <line x1="3" y1="10" x2="21" y2="10" class="ico-outline" />
+                <line x1="8" y1="2.5" x2="8" y2="6" class="ico-outline" />
+                <line x1="16" y1="2.5" x2="16" y2="6" class="ico-outline" />
+                <circle cx="8" cy="14" r="1.4" class="ico-accent" />
+                <circle cx="12" cy="14" r="1.4" class="ico-accent" />
+                <circle cx="16" cy="14" r="1.4" class="ico-accent" />
+            </symbol>
+    
+            <!-- plane -->
+            <symbol id="ico-plane" viewBox="0 0 24 24">
+                <path d="M22 13H12L3 20l2.5-7H2l-1-2 1-2h3.5L3 2l9 7h10l-2 4z" class="ico-outline" />
+                <path d="M22 13l-2 4" class="ico-accent" />
+            </symbol>
+    
+            <!-- paper-plane (send) -->
+            <symbol id="ico-send" viewBox="0 0 24 24">
+                <path d="M22 2L11 13" class="ico-outline" />
+                <path d="M22 2l-7 20-4-9-9-4 20-7z" class="ico-outline" />
+                <path d="M11 13l4 4" class="ico-accent" />
+            </symbol>
+    
+            <!-- user -->
+            <symbol id="ico-user" viewBox="0 0 24 24">
+                <circle cx="12" cy="7.5" r="3.5" class="ico-outline" />
+                <path d="M5 20a7 7 0 0 1 14 0" class="ico-outline" />
+                <path d="M12 11v0" class="ico-accent" />
+            </symbol>
+    
+            <!-- mail -->
+            <symbol id="ico-mail" viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="14" rx="2" class="ico-outline" />
+                <path d="M3 7l9 6 9-6" class="ico-accent" />
+            </symbol>
+    
+            <!-- lock -->
+            <symbol id="ico-lock" viewBox="0 0 24 24">
+                <rect x="4" y="10" width="16" height="10" rx="2" class="ico-outline" />
+                <path d="M8 10V7a4 4 0 1 1 8 0v3" class="ico-outline" />
+                <path d="M12 14v3" class="ico-accent" />
+            </symbol>
+    
+            <!-- phone -->
+            <symbol id="ico-phone" viewBox="0 0 24 24">
+                <rect x="6.5" y="2.5" width="11" height="19" rx="2" class="ico-outline" />
+                <path d="M10 18h4" class="ico-accent" />
+            </symbol>
+    
+            <!-- shield-check (policies) -->
+            <symbol id="ico-shield-check" viewBox="0 0 24 24">
+                <path d="M12 2l7 3v6c0 5-3.5 9-7 11-3.5-2-7-6-7-11V5l7-3z" class="ico-outline" />
+                <path d="M9 12l2 2 4-4" class="ico-accent" />
+            </symbol>
+    
+            <!-- document text -->
+            <symbol id="ico-doc" viewBox="0 0 24 24">
+                <path d="M6 2h8l4 4v16H6z" class="ico-outline" />
+                <path d="M14 2v4h4" class="ico-outline" />
+                <path d="M8 10h8M8 14h8M8 18h5" class="ico-accent" />
+            </symbol>
+        </defs>
+    </svg>
+    
+    <!-- Registration Modal (SHOW FIRST) -->
+    <div id="registration-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" style="display:flex;">
+      <div class="auth-card w-[520px] max-w-[92vw] p-8">
+        <div class="flex flex-col items-center text-center gap-4 mb-4">
+          <div class="auth-logo">
+            
+            <!-- Mini AiLink logo (reuse your existing mark path) -->
+            <svg viewBox="0 0 156.72 156.72" class="w-14 h-14" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#0f61b6" d="M146.97,90.21c-10.43,26.74-32.82,50.64-62.14,55.06C39.95,152.64,2.5,115.7,10.95,70.8,16.9,22.1,79.24-7.61,118.95,22.84c14.91,10.6,1.88,29.51-4.56,13.27-1.73-7.87-11.05-11.05-17.79-12.95-19.99-5.01-42.68.48-57.11,15.43-22.59,21.55-25.28,66.14,1.08,85.7,22.36,16.77,55.56,12.84,75.87-5.39,3.22-2.95,12.61-11.62,12.15-15.66-7.72,4.93-20.06,7.76-25.03-2.19-.35-1.01-1.8-1.02-2.64.02-6.71,8.52-21.52,8.82-21.85-4.12-8.28,5.04-15.98,13.41-26.95,11.8-9.43-.86-16.34-9.67-16.46-18.89.52-20.14,17.31-43.8,38.94-42.3,4.87.32,9.85,2.62,13.42,6.02.71.47,1.48.49,2.12-.28,3.29-4.01,9.62-.73,9.74,4.05,1.2,6.22-16.99,41.84-4.5,38.94,3.62-1.76,7.26-4.57,8.59-8.5,3.21-5.87,8.05-41.79,16.63-35.28,10.16,6.37-11.98,35.63-4.15,44.48,11.24,5.29,22.41-23.3,30.51-8.48v1.68ZM85.04,66.26c-.23-13.12-17.88-9.6-24.27-2.78-7.49,7.1-13.78,19.43-10.19,30,13.22,16.52,34.52-13.49,34.45-27.22Z" />
+             </svg>
+          </div>
+          <h2 class="text-[28px] auth-title">Create Account</h2>
+        </div>
+
+        <form id="register-form" class="flex flex-col gap-4">
+          <div class="form-tile">
+            <svg aria-hidden="true"><use href="#ico-user"/></svg>
+            <input type="text" name="name" placeholder="Full Name" required class="bg-transparent flex-1 outline-none" value="admin"/>
+          </div>
+
+          <div class="form-tile">
+            <svg aria-hidden="true"><use href="#ico-mail"/></svg>
+            <input type="email" name="email" placeholder="Email" required class="bg-transparent flex-1 outline-none" value="admin@ailink.at"/>
+          </div>
+
+          <div class="form-tile">
+            <svg aria-hidden="true"><use href="#ico-lock"/></svg>
+            <input type="password" name="password" placeholder="Password" required class="bg-transparent flex-1 outline-none" value="12345678"/>
+          </div>
+
+          <div class="form-tile">
+            <svg aria-hidden="true"><use href="#ico-phone"/></svg>
+            <input type="tel" name="phone" placeholder="Phone Number" required class="bg-transparent flex-1 outline-none" value="555 555 1212"/>
+          </div>
+
+          <button type="submit" class="auth-button w-full">Register</button>
+        </form>
+
+        <div class="auth-footer mt-4 text-center text-sm auth-subtle">
+          Already have an account? 
+          <a href="#" id="auth-login-link" class="font-medium">Log in</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTP Modal -->
+    <div id="otp-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        style="display:none;">
+        <div class="bg-white text-gray-900 rounded-2xl p-8 w-96 shadow-xl flex flex-col gap-4">
+            <h2 class="text-xl font-bold text-blue-600 mb-2">Verify Your Account</h2>
+            <form id="otp-form" class="flex flex-col gap-3">
+                <input type="text" name="otp" placeholder="Enter OTP code" required class="bg-gray-100 rounded px-3 py-2 tracking-[.35em] text-center" value="12345" inputmode="numeric" autocomplete="one-time-code" />
+                <button type="submit" class="bg-blue-600 text-white font-bold py-2 rounded">Verify</button>
+            </form>
+            <p class="text-xs text-gray-500">Check your SMS for the code.</p>
+        </div>
+    </div>
+
+    <!-- Inline legal content template (no fetch needed) -->
+    <template id="legal-template">
+      <!-- ======= TERMS OF SERVICE ======= -->
+      <section id="tos" class="space-y-6 text-[15px] leading-7">
+        <header>
+          <h2 class="text-xl font-semibold text-blue-600">Terms of Service</h2>
+          <p class="mt-1 text-sm text-gray-600">Last updated: September 14, 2025</p>
+        </header>
+        <p>These Terms of Service (“<strong>Terms</strong>”) govern your use of the AI Link LLC (“<strong>AI Link</strong>”, “we”, “us”, “our”) SMS-based assistant and related web properties (the “<strong>Service</strong>”). By using the Service, you agree to these Terms.</p>
+        <h3 class="text-lg font-semibold">1) Description of Service</h3>
+        <p>AI Link provides a conversational assistant that can help with tasks such as customer care interactions, scheduling confirmations, and authentication codes via SMS/MMS. The Service may interact with third-party providers to fulfill your requests.</p>
+        <h3 class="text-lg font-semibold">2) Eligibility & Registration</h3>
+        <p>You must be at least 13 years old. You agree to provide a valid mobile number and consent to receive SMS from us in connection with the Service.</p>
+        <h3 class="text-lg font-semibold">3) Acceptable Use</h3>
+        <p>You agree not to misuse the Service, interfere with its operation, or use it for unlawful purposes. You are responsible for all activity associated with your mobile number.</p>
+        <h3 class="text-lg font-semibold">4) Third-Party Services</h3>
+        <p>The Service may interact with third-party platforms (e.g., calendar, travel, messaging, and payments providers). Your use of those services is governed by their terms and privacy policies. AI Link is not responsible for their performance or practices.</p>
+        <h3 class="text-lg font-semibold">5) Fees & Payment</h3>
+        <p>Certain actions (e.g., travel bookings or paid upgrades) may involve fees. You will be notified before any charges and asked to confirm through a secure processor. Except where required by law, charges are final and non-refundable.</p>
+        <h3 class="text-lg font-semibold">6) SMS Program Terms</h3>
+        <ul class="list-disc ml-6 space-y-2">
+          <li>By opting in, you agree to receive SMS/MMS from <strong>AI Link LLC</strong> for selected purposes (e.g., customer care, confirmations, authentication codes).</li>
+          <li><em>Message frequency may vary.</em> Message &amp; data rates may apply.</li>
+          <li>Reply <strong>STOP</strong> to unsubscribe at any time; reply <strong>HELP</strong> for help.</li>
+          <li>We honor opt-out requests promptly and maintain consent records.</li>
+        </ul>
+        <h3 class="text-lg font-semibold">7) Termination</h3>
+        <p>We may suspend or terminate access if we believe your use violates these Terms or is harmful to the Service or others.</p>
+        <h3 class="text-lg font-semibold">8) Disclaimers & Limitation of Liability</h3>
+        <p class="uppercase text-[13px] tracking-wide">THE SERVICE IS PROVIDED “AS IS” AND “AS AVAILABLE.” TO THE MAXIMUM EXTENT PERMITTED BY LAW, AI LINK LLC DISCLAIMS ALL WARRANTIES AND SHALL NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</p>
+        <h3 class="text-lg font-semibold">9) Changes</h3>
+        <p>We may modify the Service or these Terms. We will post updates here and may notify you of material changes. Your continued use constitutes acceptance of the updated Terms.</p>
+        <h3 class="text-lg font-semibold">10) Governing Law</h3>
+        <p>These Terms are governed by the laws of the State of Missouri, without regard to conflict-of-law rules.</p>
+        <h3 class="text-lg font-semibold">11) Contact</h3>
+        <p>Questions? <a class="underline" href="mailto:support@ailink.at">support@ailink.at</a></p>
+      </section>
+      <hr class="dashed-line my-8"/>
+      <!-- ======= PRIVACY POLICY ======= -->
+      <section id="privacy" class="space-y-6 text-[15px] leading-7">
+        <header>
+          <h2 class="text-xl font-semibold text-blue-600">Privacy Policy</h2>
+          <p class="mt-1 text-sm text-gray-600">Last updated: September 14, 2025</p>
+        </header>
+        <p>AI Link LLC (“<strong>we</strong>,” “<strong>us</strong>,” “<strong>our</strong>”) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our SMS/MMS-based assistant (the “<strong>Service</strong>”).</p>
+        <h3 class="text-lg font-semibold">1) Information We Collect</h3>
+        <ul class="list-disc ml-6 space-y-2">
+          <li><strong>Personal Data:</strong> Mobile phone number (and basic profile details you provide) for account setup and communication.</li>
+          <li><strong>Conversation Data:</strong> SMS/MMS content to understand requests, maintain context, and improve service quality.</li>
+          <li><strong>Third-Party Data:</strong> Only as needed to fulfill your requests (e.g., names/emails for invites, travel details for bookings, payment confirmations).</li>
+          <li><strong>Usage Data:</strong> Interaction metadata to maintain reliability, security, and performance.</li>
+        </ul>
+        <h3 class="text-lg font-semibold">2) How We Use Information</h3>
+        <ul class="list-disc ml-6 space-y-2">
+          <li>Provide, maintain, and improve the Service.</li>
+          <li>Process requests and transactions and send transactional messages (including OTP codes).</li>
+          <li>Enhance security, prevent abuse, and comply with legal obligations.</li>
+          <li>Train and evaluate AI systems to better understand and respond to user requests (with safeguards).</li>
+        </ul>
+        <h3 class="text-lg font-semibold">3) Sharing</h3>
+        <ul class="list-disc ml-6 space-y-2">
+          <li><strong>Service Providers:</strong> With third-party providers solely to fulfill your requests (e.g., airlines, calendars, payments).</li>
+          <li><strong>With Your Consent:</strong> For any other purpose you explicitly approve.</li>
+          <li><strong>Legal:</strong> If required by law or to protect the rights and safety of our company or others.</li>
+        </ul>
+        <h3 class="text-lg font-semibold">4) No Selling/Sharing for Marketing</h3>
+        <p class="bg-gray-50 border border-gray-200 rounded p-3">We do <strong>not</strong> sell your personal information. We do <strong>not</strong> share, sell, or rent your <em>mobile information</em> with third parties or affiliates for marketing or promotional purposes. Mobile information is used only to deliver the SMS/MMS services you have opted into.</p>
+        <h3 class="text-lg font-semibold">5) Data Security & Retention</h3>
+        <p>We use administrative, technical, and physical safeguards to protect your information. We retain data for as long as your account is active or as needed to provide the Service and meet legal obligations.</p>
+        <h3 class="text-lg font-semibold">6) Your Choices</h3>
+        <ul class="list-disc ml-6 space-y-2">
+          <li><strong>Opt-Out:</strong> Text <strong>STOP</strong> to unsubscribe at any time; <strong>HELP</strong> for help.</li>
+          <li><strong>Access/Deletion:</strong> You may request deletion of conversation history by contacting us.</li>
+          <li><strong>Preferences:</strong> You can manage which categories of messages you receive when you enroll.</li>
+        </ul>
+        <h3 class="text-lg font-semibold">7) Changes</h3>
+        <p>We may update this policy and will notify you of material changes (e.g., via SMS or on our site).</p>
+        <h3 class="text-lg font-semibold">8) Contact</h3>
+        <p>Questions? <a class="underline" href="mailto:support@ailink.at">support@ailink.at</a></p>
+      </section>
+    </template>
+    <!-- POLICIES MODAL (loads legal.html, adds 2 checkboxes, requires scroll-to-bottom) -->
+    <div id="legal-modal" class=""></div>
+
+    <!-- Auth landing hero (background only, emulator moved to demo.html) -->
+    <main class="w-full max-w-5xl mx-auto min-h-[70vh] flex items-center justify-center text-center">
+      <div class="space-y-4">
+        <div class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-16 min-h-screen">
+            <!-- Left: Logo + Headline + Content (all vertically) -->
+            <div class="flex flex-col items-center text-center flex-1">
+                <!-- Logo circle -->
+                <div class="w-40 h-40 mb-8 p-4 rounded-full flex items-center justify-center
+                          bg-gradient-to-br from-gray-200 via-gray-400 to-gray-500">
+                    <!-- Your SVG logo -->
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                        viewBox="0 0 156.72 156.72" class="w-full h-full">
+                        <defs>
+                            <style>
+                                .cls-1 {
+                                    fill: #a19e9e;
+                                    font-family: DINAlternate-Bold, 'DIN Alternate';
+                                    font-size: 8px;
+                                    font-weight: 700;
+                                }
+        
+                                .cls-2 {
+                                    fill: #0f61b6;
+                                    stroke-width: 0px;
+                                }
+                            </style>
+                        </defs>
+                        <g id="Layer_1_Image" data-name="Layer 1 Image">
+                            <path class="cls-2"
+                                d="M146.97,90.21c-10.43,26.74-32.82,50.64-62.14,55.06C39.95,152.64,2.5,115.7,10.95,70.8,16.9,22.1,79.24-7.61,118.95,22.84c14.91,10.6,1.88,29.51-4.56,13.27-1.73-7.87-11.05-11.05-17.79-12.95-19.99-5.01-42.68.48-57.11,15.43-22.59,21.55-25.28,66.14,1.08,85.7,22.36,16.77,55.56,12.84,75.87-5.39,3.22-2.95,12.61-11.62,12.15-15.66-7.72,4.93-20.06,7.76-25.03-2.19-.35-1.01-1.8-1.02-2.64.02-6.71,8.52-21.52,8.82-21.85-4.12-8.28,5.04-15.98,13.41-26.95,11.8-9.43-.86-16.34-9.67-16.46-18.89.52-20.14,17.31-43.8,38.94-42.3,4.87.32,9.85,2.62,13.42,6.02.71.47,1.48.49,2.12-.28,3.29-4.01,9.62-.73,9.74,4.05,1.2,6.22-16.99,41.84-4.5,38.94,3.62-1.76,7.26-4.57,8.59-8.5,3.21-5.87,8.05-41.79,16.63-35.28,10.16,6.37-11.98,35.63-4.15,44.48,11.24,5.29,22.41-23.3,30.51-8.48v1.68ZM85.04,66.26c-.23-13.12-17.88-9.6-24.27-2.78-7.49,7.1-13.78,19.43-10.19,30,13.22,16.52,34.52-13.49,34.45-27.22Z" />
+                            <g id="TM">
+                                <text class="cls-1" transform="translate(132.71 59.1)">
+                                    <tspan x="0" y="0">TM</tspan>
+                                </text>
+                            </g>
+                    </svg>
+                </div>
+        
+                <h1 class="text-5xl md:text-6xl font-bold">Goodbye, UI.</h1>
+                <h2 class="text-3xl md:text-4xl text-blue-400 mt-2">Hello, Assistant.</h2>
+                <p class="mt-6 max-w-lg text-lg text-gray-300">
+                    AI Link transforms your native messaging app into a powerful personal assistant.
+                    Schedule meetings, book travel, and coordinate events through simple conversation.
+                </p>
+                <p class="mt-4 text-sm text-gray-300">
+                    <a href="privacy.html" class="underline underline-offset-4">Privacy Policy</a> •
+                    <a href="terms.html" class="underline underline-offset-4">Terms of Service</a>
+                </p>
+            </div>
+
+      </div>
+    </main>
+
+        <script>
+          // Utility to show toast
+          function showNotification(message, type = 'success') {
+            const el = document.getElementById('notification-message');
+            if (el) {
+              el.textContent = message;
+              el.className = `message-box ${type} show`;
+              setTimeout(() => el.classList.remove('show'), 4000);
+            }
+          }
+
+          const legalModal = document.getElementById('legal-modal');
+          const simulatorContainer = document.getElementById('simulator-container');
+          const phoneInput = document.getElementById('phone');
+          const sendButton = document.getElementById('send-button');
+          const regModal = document.getElementById('registration-modal');
+          const otpModal = document.getElementById('otp-modal');
+          const regForm = document.getElementById('register-form');
+          const otpForm = document.getElementById('otp-form');
+
+          // Inject a self-contained Legal modal (TOS + Privacy) on demand
+          function ensureLegalModal() {
+            if (legalModal.innerHTML.trim()) return;
+            // Base shell
+            legalModal.innerHTML = `
+              <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                <div class="modal-content bg-white text-gray-900 rounded-2xl w-[92vw] max-w-3xl h-[80vh] shadow-2xl">
+                  <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200">
+                    <div class="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                      <svg aria-hidden="true" width="20" height="20"><use href="#ico-doc"/></svg>
+                      Policies
+                    </div>
+                    <button id="close-legal" class="hd-button-icon" aria-label="Close">✕</button>
+                  </div>
+                  <div id="modal-body" class="modal-body text-sm leading-6">
+                    <div id="legal-content" class="prose prose-sm max-w-none"></div>
+                    <div id="consent-block" class="mt-6 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                      <div class="space-y-3">
+                        <label class="flex items-start gap-2 text-sm">
+                          <input id="cb-tos" type="checkbox" class="accent-blue-600 mt-1">
+                          <span>I agree to AI Link LLC’s <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>.</span>
+                        </label>
+                        <label class="flex items-start gap-2 text-sm">
+                          <input id="cb-optin" type="checkbox" class="accent-blue-600 mt-1">
+                          <span>I agree (opt in) to have SMS/MMS exchanges with AI Link’s AI Assistant to provide services including scheduling meetings, arranging travel plans, and locating items I choose to purchase. The Assistant will never solicit me, but may suggest beneficial alternatives when available.</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button id="agree-button" class="hd-button-primary w-full" disabled>Agree &amp; Continue</button>
+                  </div>
+                </div>
+              </div>`;
+            legalModal.classList.add('show');
+            // Load from inline template (no network dependency)
+            const tpl = document.getElementById('legal-template');
+            if (tpl) {
+              document.getElementById('legal-content').innerHTML = tpl.innerHTML;
+            }
+          }
+
+          function wireLegalModal() {
+            const modal = document.getElementById('legal-modal');
+            const modalBody = modal.querySelector('#modal-body');
+            const agreeBtn = modal.querySelector('#agree-button');
+            const closeBtn = modal.querySelector('#close-legal');
+            const cbTos = modal.querySelector('#cb-tos');
+            const cbOptIn = modal.querySelector('#cb-optin');
+
+            const updateState = () => {
+              const atBottom = modalBody.scrollTop + modalBody.clientHeight >= modalBody.scrollHeight - 10;
+              agreeBtn.disabled = !(atBottom && cbTos.checked && cbOptIn.checked);
+            };
+            modalBody.addEventListener('scroll', updateState);
+            cbTos.addEventListener('change', updateState);
+            cbOptIn.addEventListener('change', updateState);
+
+            closeBtn.addEventListener('click', () => { modal.classList.remove('show'); modal.innerHTML = ''; });
+
+            agreeBtn.addEventListener('click', () => {
+              modal.classList.remove('show');
+              modal.innerHTML = '';
+              // After login/signup and consent, go to the demo page
+              window.location.href = 'demo.html';
+            });
+
+            // close on backdrop click
+            modal.addEventListener('mousedown', (e) => {
+              const panel = modal.querySelector('.modal-content');
+              if (panel && !panel.contains(e.target)) { modal.classList.remove('show'); modal.innerHTML = ''; }
+            });
+          }
+
+          // Registration -> OTP
+          if (regForm) {
+            regForm.addEventListener('submit', (e) => {
+              e.preventDefault();
+              regModal.style.display = 'none';
+              otpModal.style.display = 'flex';
+            });
+          }
+
+          // OTP -> Policies modal -> redirect to demo.html
+          if (otpForm) {
+            otpForm.addEventListener('submit', (e) => {
+              e.preventDefault();
+              otpModal.style.display = 'none';
+              ensureLegalModal();
+              wireLegalModal();
+              // When the user agrees in the legal modal, we redirect from inside wireLegalModal
+            });
+          }
+
+          // Open modal from the new button in the chat bubble
+          document.addEventListener('click', (e) => {
+            if (e.target.closest('#view-terms-button') || e.target.closest('#inline-privacy-link')) {
+              ensureLegalModal();
+              wireLegalModal();
+            }
+          });
+
+          // Auth login link (demo: just closes registration and shows OTP as if logging in)
+          document.addEventListener('click', (e) => {
+            const a = e.target.closest('#auth-login-link');
+            if (!a) return;
+            e.preventDefault();
+            // Optional: switch to OTP or close reg modal
+            document.getElementById('registration-modal').style.display = 'none';
+            document.getElementById('otp-modal').style.display = 'flex';
+          });
+
+          // Prefill OTP (if you have OTP flow wired elsewhere, keep as-is)
+        </script>
+    </body>
+</html>

@@ -1,0 +1,22 @@
+<!-- modal.html -->
+<!-- This entire fragment will be injected into <div id="legal-modal"> in index.html -->
+<div class="modal-content bg-white text-gray-900 rounded-2xl shadow-xl flex flex-col h-full">
+  <div id="modal-body" class="modal-body overflow-y-auto p-6 flex flex-col" style="height: 100%;">
+    <h2 class="text-2xl font-bold text-blue-600 mb-4">
+      To continue, please review and agree to our Privacy Policy and Terms of Service
+    </h2>
+    <div class="flex-1 overflow-y-auto mb-4" id="policy-scroll-area" style="max-height: 55vh;">
+      <iframe src="privacy.html" class="w-full h-64 mb-6 rounded border" style="background:white;"></iframe>
+      <iframe src="terms.html" class="w-full h-64 rounded border" style="background:white;"></iframe>
+    </div>
+    <div class="mt-4 flex flex-col items-center">
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" id="agree-checkbox" class="accent-blue-600" />
+        I have read and agree to the Privacy Policy and Terms of Service
+      </label>
+      <button id="agree-button" class="mt-4 w-40 h-12 rounded-lg bg-blue-600 text-white font-bold text-lg shadow-lg" disabled>
+        Continue
+      </button>
+    </div>
+  </div>
+</div>
